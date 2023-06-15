@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Graphique</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+</head>
+<body>
+  <canvas id="myChart"></canvas>
+<script>
+    // Récupérer les données passées depuis Flask
+    var stackedData = {{ stacked_data|tojson }};
+    var labels = {{ labels|tojson }};
+    
+    var colors = [
+      'rgba(63, 81, 181, 0.7)',   // Indigo
+      'rgba(33, 150, 243, 0.7)',  // Bleu
+      'rgba(76, 175, 80, 0.7)',   // Vert
+      'rgba(255, 193, 7, 0.7)',   // Jaune
+      'rgba(255, 87, 34, 0.7)',   // Orange
+      'rgba(156, 39, 176, 0.7)',  // Violet
+      'rgba(0, 150, 136, 0.7)',   // Turquoise
+      'rgba(255, 152, 0, 0.7)',   // Ambre
+      'rgba(121, 85, 72, 0.7)',   // Brun
+      'rgba(233, 30, 99, 0.7)',   // Fuchsia
+      'rgba(3, 169, 244, 0.7)'    // Ciel
+    ];
+
+    for (var i = 0; i < stackedData.length; i++) {
+      stackedData[i].backgroundColor = colors[i];
+      stackedData[i].borderColor = colors[i];
+    }
+
+    // Créer le graphique avec Chart.js
+    var ctx = document.getElementById('myChart').getContext('2d');
+    var chart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: stackedData
+      },
+      options: {
+        plugins: {
+          datalabels: {
+            anchor: 'end',
+            align: 'top',
+            formatter: function(value, context) {
+              // Afficher le total pour chaque point de l'axe des abscisses
+              var dataset = context.dataset;
+              var datasetIndex = context.datasetIndex;
+              var dataIndex = context.dataIndex;
+              var datasetData = dataset.data;
+              var total = datasetData.reduce(function(a, b) {
+                return a + b;
+              }, 0);
+              return total;
+            },
+            font: {
+              weight: 'bold'
+            }
+          }
+        },
+        scales: {
+          x: {
+            stacked: true,
+            title: {
+              display: true,
+              text: 'Hour of the Day'  // Titre de l'axe des abscisses
+            }
+          },
+          y: {
+            stacked: true,
+            title: {
+              display: true,
+              text: 'Production of electricity'  // Titre de l'axe des ordonnées
+            }
+          }
+        },
+        plugins: {
+          title: {
+            display: true,
+            text: 'Average Production of Electricity by hour by type of production',  // Titre du graphique
+            font: {
+              size: 16,
+              weight: 'bold'
+            }
+          }
+        }
+      }
+    });
+</script>
+
+</body>
+</html>
